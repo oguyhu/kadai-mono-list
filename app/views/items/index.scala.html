@@ -4,7 +4,7 @@
 searchForm: Form[Option[String]],
 items: Seq[Item])(implicit messagesProvider: MessagesProvider, flash: Flash, request: RequestHeader)
 
-@main(Messages("Items"), Some(currentUser)) {
+@main(Messages("Item"), Some(currentUser)) {
 
 <div class="container">
     <div class="search">
@@ -22,8 +22,8 @@ items: Seq[Item])(implicit messagesProvider: MessagesProvider, flash: Flash, req
             </div>
         </div>
     </div>
-    @* 変更: 引数にcurrentUserを渡す *@
-    @views.html.items.items(Some(currentUser), items)
+    @* 型をmapで変換する *@
+    @views.html.items.items(Some(currentUser), items.map((_, None)))
 </div>
 
 }

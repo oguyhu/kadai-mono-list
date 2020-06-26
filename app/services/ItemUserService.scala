@@ -6,4 +6,9 @@ trait ItemUserService {
 
   def doNotWant(userId: Long, itemId: Long): Boolean
 
+  def have(userId: Long, itemId: Long): Boolean
+
+  def doNotHave(userId: Long, itemId: Long): Boolean
+
+
 }

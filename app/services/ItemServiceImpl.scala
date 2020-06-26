@@ -5,11 +5,11 @@ import java.time.ZonedDateTime
 import javax.inject.{Inject, Singleton}
 import akka.actor.ActorSystem
 import com.github.j5ik2o.rakutenApi.itemSearch.{ImageFlagType, RakutenItemSearchAPI, RakutenItemSearchAPIConfig, Item => RakutenItem}
-import models.{Item, ItemUser}
+import models.{Item, ItemUser, User, WantHaveType}
 import play.api.Configuration
 import play.api.libs.concurrent.ActorSystemProvider
-import scalikejdbc.DBSession
-import scalikejdbc.sqls
+import scalikejdbc._
+import scalikejdbc.interpolation.SQLSyntax.count
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -99,7 +99,8 @@ class ItemServiceImpl @Inject()(configuration: Configuration, actorSystemProvide
   }
 
   override def getItemsByUserId(userId: Long)(implicit dbSession: DBSession): Try[Seq[Item]] = Try {
-    Item.allAssociations.findAllBy(sqls.eq(ItemUser.defaultAlias.userId, userId))
+    val ids = ItemUser.findAllBy(sqls.eq(ItemUser.defaultAlias.userId, userId)).map(_.itemId)
+    Item.allAssociations.findAllBy(sqls.in(Item.defaultAlias.id, ids))
   }
 
   override def getItemById(itemId: Long)(implicit dbSession: DBSession): Future[Option[Item]] = Future {
@@ -110,5 +111,21 @@ class ItemServiceImpl @Inject()(configuration: Configuration, actorSystemProvide
     Item.allAssociations
       .findAllWithLimitOffset(limit, orderings = Seq(Item.defaultAlias.updateAt.desc))
       .toVector
+  }
+
+  def getItemsByRanking(`type`: WantHaveType.Value)(implicit dbSession: DBSession): Try[Seq[(Item, Int)]] = Try {
+    val i  = Item.syntax("i")
+    val iu = ItemUser.syntax("iu")
+    withSQL {
+      select(count(i.id), i.resultAll)
+        .from(Item as i)
+        .leftJoin(ItemUser as iu)
+        .on(iu.itemId, i.id)
+        .where
+        .eq(iu.`type`, `type`.toString)
+        .groupBy(i.id)
+        .orderBy(count)
+        .desc
+    }.map(rs => (Item(i)(rs), rs.int(1))).list().apply().toVector
   }
 }

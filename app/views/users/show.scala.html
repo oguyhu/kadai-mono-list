@@ -20,12 +20,13 @@
                 <li>
                     <div class="status-label">HAVE</div>
                     <div id="have_count" class="status-value">
-                        xxx
+                        @targetUser.haveItems.size
                     </div>
                 </li>
             </ul>
         </div>
     </div>
-    @views.html.items.items(Some(currentUser), items)
+    @* 変更する *@
+    @views.html.items.items(Some(currentUser), items.map((_, None)))
 </div>
 }
