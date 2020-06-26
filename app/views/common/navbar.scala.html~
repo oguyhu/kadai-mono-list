@@ -1,0 +1,71 @@
+@import b3.vertical.fieldConstructor
+@(currentUserOpt: Option[User])(implicit messagesProvider: MessagesProvider, flash: Flash, request: RequestHeader)
+
+<header>
+    <nav class="navbar navbar-default navbar-static-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-
+avbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-left" href="/"><img src="@routes.Assets.versioned("/images/logo.png")" alt="Monolist"></a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    @if(currentUserOpt.isDefined) {
+                    <li>
+                        <a href="@routes.ItemsController.index(None)">
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                            @Messages("AddItem")
+                        </a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                            <span class="glyphicon glyphicon-signal" aria-hidden="true"></span>
+                            @Messages("Ranking")
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="@routes.RankingController.want()">Wantランキング</a></li>
+                            <li><a href="@routes.RankingController.have()">Haveランキング</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                               <span class="gravatar">
+                                   <img src="@common.gravatarUrl(currentUserOpt.get.email)?s=20&amp;r=g&amp;d=identicon&amp;d=mm" alt="" class="img-circle">
+                               </span>
+                            @currentUserOpt.get.name
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="@routes.UsersController.show(currentUserOpt.get.id.get)">@Messages("MyPage")</a>
+                            </li>
+                            <li role="separator" class="divider"></li>
+                            <li>
+                                @* *@
+                                @b3.formCSRF(routes.AuthController.logout(), 'name -> "logout", 'style -> "display: none") {
+                                @b3.submit() {
+                                @Messages("LogOut")
+                                }
+                                }
+                                <a href="#" onclick="document.logout.submit();">@Messages("LogOut")</a>
+                            </li>
+                        </ul>
+                    </li>
+                    } else {
+                    <li><a href="@routes.SignUpController.index()">@Messages("Register")</a></li>
+                    @* リンクを更新 *@
+                    <li><a href="@routes.AuthController.index()">@Messages("LogIn")</a></li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
